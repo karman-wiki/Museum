@@ -2,189 +2,143 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Museum Buff Calculator</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Museum Master: Ultra</title>
     <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Lexend:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root {
-            --bg: #151515; --panel: #252525; --header: #ffce44;
-            --common: #ffffff; --uncommon: #77ff77; --rare: #5cb2ff;
-            --epic: #ca83ff; --legendary: #ffdf5d; --mythic: #ff6b8b; --exotic: #ff9d42;
-        }
-
-        body {
-            background: radial-gradient(circle at center, #2c2c2c 0%, #0a0a0a 100%);
-            color: white; font-family: 'Lexend', sans-serif; margin: 0; padding: 20px;
-            display: flex; flex-direction: column; align-items: center;
-        }
-
-        .ribbon {
-            background: var(--header); color: #4b3600;
-            padding: 15px 60px; font-family: 'Fredoka One', cursive;
-            font-size: 2rem; border-radius: 0 0 30px 30px;
-            box-shadow: 0 8px 0 #b18c00, 0 15px 30px rgba(0,0,0,0.5);
-            text-transform: uppercase; margin-bottom: 30px; text-align: center;
-        }
-
-        /* Player Stats Panel */
-        .base-stats-panel {
-            background: rgba(0,0,0,0.7); border: 2px solid var(--header);
-            border-radius: 20px; padding: 20px; margin-bottom: 30px;
-            width: 100%; max-width: 900px; display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 15px;
-        }
-
-        .base-input-group { display: flex; flex-direction: column; }
-        .base-input-group label { font-size: 0.75rem; color: var(--header); font-weight: bold; margin-bottom: 5px; }
-        .base-input-group input { 
-            background: #111; color: #fff; border: 1px solid #555; 
-            padding: 10px; border-radius: 8px; font-family: 'Lexend'; font-size: 1rem;
-        }
-
-        .museum-grid {
-            display: grid; grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
-            gap: 20px; width: 100%; max-width: 1200px; padding-bottom: 200px;
-        }
-
-        .card {
-            background: var(--panel); border-radius: 20px; padding: 18px;
-            border: 4px solid #444; box-shadow: inset 0 0 15px rgba(0,0,0,0.5);
-        }
-
-        .card-header { font-family: 'Fredoka One'; font-size: 1.3rem; margin-bottom: 12px; display: flex; justify-content: space-between; align-items: center; }
-        
-        .COMMON { border-color: var(--common); } .UNCOMMON { border-color: var(--uncommon); }
-        .RARE { border-color: var(--rare); } .EPIC { border-color: var(--epic); }
-        .LEGENDARY { border-color: var(--legendary); } .MYTHIC { border-color: var(--mythic); }
-        .EXOTIC { border-color: var(--exotic); }
-
-        .slot { background: rgba(0,0,0,0.4); border-radius: 12px; padding: 12px; margin-bottom: 12px; border: 1px solid #555; }
-        
-        select {
-            width: 100%; background: #111; color: #fff; border: 1px solid #666;
-            padding: 10px; border-radius: 8px; font-family: 'Lexend'; margin-top: 6px; font-size: 0.9rem;
-        }
-
-        /* Floating Footer */
-        .footer-stats {
-            position: fixed; bottom: 0; left: 0; right: 0;
-            background: #1a1a1a; border-top: 5px solid var(--header);
-            padding: 20px; display: flex; justify-content: center; gap: 30px;
-            box-shadow: 0 -10px 40px rgba(0,0,0,0.9); z-index: 1000; flex-wrap: wrap;
-        }
-
-        .stat-box { text-align: center; min-width: 140px; border-right: 1px solid #333; padding-right: 15px; }
-        .stat-box:last-child { border: none; }
-        .stat-label { font-size: 0.7rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-val { font-family: 'Fredoka One'; font-size: 1.5rem; color: var(--header); display: block; margin: 4px 0; }
-        .stat-pct { font-size: 0.85rem; color: #77ff77; font-weight: bold; background: rgba(119, 255, 119, 0.1); padding: 2px 8px; border-radius: 5px; }
+        :root { --bg: #000; --panel: #1a1a1a; --header: #ffce44; --common: #dfdfdf; --uncommon: #83ff83; --rare: #5cb2ff; --epic: #ca83ff; --legendary: #ffdf5d; --mythic: #ff6b8b; --exotic: #ff9d42; }
+        body { background: var(--bg); color: #fff; font-family: 'Lexend', sans-serif; margin: 0; padding-bottom: 260px; }
+        .sticky-top { position: sticky; top: 0; z-index: 1000; background: var(--bg); border-bottom: 2px solid #333; }
+        .ribbon { background: var(--header); color: #332700; padding: 10px; font-family: 'Fredoka One'; text-align: center; font-size: 1.1rem; text-transform: uppercase; }
+        .section-tab { background: #111; padding: 10px; margin: 5px 10px; border-radius: 10px; border: 1px solid #444; }
+        .section-title { font-family: 'Fredoka One'; color: var(--header); font-size: 0.8rem; margin-bottom: 8px; text-transform: uppercase; display: flex; justify-content: space-between; }
+        .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .input-group label { font-size: 0.6rem; color: #aaa; display: block; margin-bottom: 2px; }
+        .input-group input, .input-group select { width: 100%; background: #000; color: #fff; border: 1px solid #444; padding: 6px; border-radius: 6px; font-size: 0.8rem; box-sizing: border-box; }
+        .museum-grid { padding: 10px; display: flex; flex-direction: column; gap: 10px; }
+        .card { background: var(--panel); border-radius: 10px; padding: 10px; border-left: 6px solid #444; }
+        .card-h { font-family: 'Fredoka One'; font-size: 0.9rem; margin-bottom: 5px; }
+        .slot { background: rgba(0,0,0,0.4); padding: 8px; margin-top: 5px; border-radius: 8px; border: 1px solid #333; }
+        .footer { position: fixed; bottom: 0; left: 0; right: 0; background: #111; border-top: 4px solid var(--header); padding: 12px; display: grid; grid-template-columns: 1fr 1fr; gap: 8px; z-index: 100; }
+        .res-item { text-align: center; background: #000; padding: 6px; border-radius: 8px; border: 1px solid #333; }
+        .res-label { font-size: 0.6rem; color: #aaa; text-transform: uppercase; display: block; }
+        .res-val { color: var(--header); font-family: 'Fredoka One'; font-size: 1rem; }
+        .checkbox-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 5px; font-size: 0.7rem; }
+        .check-item { display: flex; align-items: center; gap: 5px; background: #222; padding: 4px; border-radius: 4px; }
     </style>
 </head>
 <body>
+    <div class="sticky-top">
+        <div class="ribbon">MUSEUM MASTER ULTRA</div>
+        
+        <div class="section-tab">
+            <div class="section-title">Base Multipliers & Mastery</div>
+            <div class="grid-2">
+                <div class="input-group"><label>Mastery Buff</label>
+                    <select id="mastery" onchange="calc()"><option value="1">None</option><option value="1.05">1.05x Luck</option><option value="1.1">1.1x Luck</option><option value="1.15">1.15x Luck</option><option value="1.2">1.2x Luck</option></select>
+                </div>
+                <div class="input-group"><label>Party Hats (+5 Luck)</label><input type="number" id="hats" value="0" min="0" oninput="calc()"></div>
+            </div>
+        </div>
 
-<div class="ribbon">Museum Buff Calculator</div>
+        <div class="section-tab">
+            <div class="section-title">Active Potions</div>
+            <div class="checkbox-grid">
+                <label class="check-item"><input type="checkbox" class="pot" data-l="5" onchange="calc()"> Basic Luck (+5)</label>
+                <label class="check-item"><input type="checkbox" class="pot" data-l="10" onchange="calc()"> Greater Luck (+10)</label>
+                <label class="check-item"><input type="checkbox" class="pot" data-l="20" onchange="calc()"> Volcanic Luck (+20)</label>
+                <label class="check-item"><input type="checkbox" class="pot" data-l="50" onchange="calc()"> Supreme Luck (+50)</label>
+                <label class="check-item"><input type="checkbox" class="pot" data-l="100" onchange="calc()"> Frozen Luck (+100)</label>
+                <label class="check-item"><input type="checkbox" class="pot" data-l="300" onchange="calc()"> Cryonic Brew (+300)</label>
+                <label class="check-item"><input type="checkbox" class="pot" data-l="500" onchange="calc()"> Witches Brew (+500)</label>
+                <label class="check-item"><input type="checkbox" class="pot" data-l="1111" onchange="calc()"> Ambrosia (+1111)</label>
+                <label class="check-item"><input type="checkbox" class="pot" data-d="0.2" data-s="0.2" onchange="calc()"> Frozen Speed (+20%)</label>
+                <label class="check-item"><input type="checkbox" class="pot" data-d="0.6" data-s="0.6" onchange="calc()"> Blitz Potion (+60%)</label>
+            </div>
+        </div>
 
-<div class="base-stats-panel">
-    <div class="base-input-group"><label>BASE LUCK</label><input type="number" id="base-luck" value="1" step="0.1" oninput="calc()"></div>
-    <div class="base-input-group"><label>BASE DIG SPEED (%)</label><input type="number" id="base-dig" value="100" oninput="calc()"></div>
-    <div class="base-input-group"><label>BASE SHAKE SPEED (%)</label><input type="number" id="base-shake" value="100" oninput="calc()"></div>
-    <div class="base-input-group"><label>BASE SIZE (%)</label><input type="number" id="base-size" value="100" oninput="calc()"></div>
-</div>
+        <div class="section-tab">
+            <div class="section-title">Runes (Max 5)</div>
+            <div class="checkbox-grid">
+                <label class="check-item"><input type="checkbox" class="rune" data-l="1" onchange="calc()"> Purity (+1x Luck)</label>
+                <label class="check-item"><input type="checkbox" class="rune" data-l="0.2" onchange="calc()"> Solitude (+0.2x Luck)</label>
+                <label class="check-item"><input type="checkbox" class="rune" data-l="0.2" onchange="calc()"> Sunblessed/Abyssal (+0.2x)</label>
+                <label class="check-item"><input type="checkbox" class="rune" data-w="2" onchange="calc()"> Speed I (+2 Walk)</label>
+                <label class="check-item"><input type="checkbox" class="rune" data-w="3" onchange="calc()"> Mnt Climber (+3 Walk)</label>
+                <label class="check-item"><input type="checkbox" id="summit" onchange="calc()"> Summit Seeker</label>
+            </div>
+        </div>
+    </div>
 
-<div class="museum-grid" id="ui-root"></div>
+    <div id="ui-root" class="museum-grid"></div>
 
-<div class="footer-stats">
-    <div class="stat-box"><span class="stat-label">Final Luck</span><span class="stat-val" id="final-luck">1.00</span><span class="stat-pct" id="pct-luck">+0%</span></div>
-    <div class="stat-box"><span class="stat-label">Final Dig Speed</span><span class="stat-val" id="final-dig">100%</span><span class="stat-pct" id="pct-dig">+0%</span></div>
-    <div class="stat-box"><span class="stat-label">Final Shake Speed</span><span class="stat-val" id="final-shake">100%</span><span class="stat-pct" id="pct-shake">+0%</span></div>
-    <div class="stat-box"><span class="stat-label">Final Size</span><span class="stat-val" id="final-size">100%</span><span class="stat-pct" id="pct-size">+0%</span></div>
-</div>
+    <div class="footer">
+        <div class="res-item"><span class="res-label">Luck</span><span class="res-val" id="f-luck">1.00x</span></div>
+        <div class="res-item"><span class="res-label">Dig Speed</span><span class="res-val" id="f-dig">1.00x</span></div>
+        <div class="res-item"><span class="res-label">Shake Speed</span><span class="res-val" id="f-shake">1.00x</span></div>
+        <div class="res-item"><span class="res-label">Size</span><span class="res-val" id="f-size">1.00x</span></div>
+    </div>
 
 <script>
-    const config = [
-        { id: 'COMMON', slots: 3, m: 0.005 },
-        { id: 'UNCOMMON', slots: 3, m: 0.0075 },
-        { id: 'RARE', slots: 3, m: 0.0125 },
-        { id: 'EPIC', slots: 3, m: 0.02 },
-        { id: 'LEGENDARY', slots: 3, m: 0.03 },
-        { id: 'MYTHIC', slots: 2, m: 0.05 },
-        { id: 'EXOTIC', slots: 1, m: 0.08 }
-    ];
-
+    const rarityConfig = [{ id:'COMMON', slots:3, m:0.005 }, { id:'UNCOMMON', slots:3, m:0.0075 }, { id:'RARE', slots:3, m:0.0125 }, { id:'EPIC', slots:3, m:0.02 }, { id:'LEGENDARY', slots:3, m:0.03 }, { id:'MYTHIC', slots:2, m:0.05 }, { id:'EXOTIC', slots:1, m:0.08 }];
     const ores = [
-        { n: "-- Select Ore --", b: 0, t: "none" },
-        { n: "Vineheart (Exotic)", b: 0.8, t: "luck" },
-        { n: "Astral Spore (Exotic)", b: 0.8, t: "dig" },
-        { n: "Diamond (Legendary)", b: 0.3, t: "luck" },
-        { n: "Star Garnet (Mythic)", b: 0.35, t: "size" },
-        { n: "Bloodstone (Exotic)", b: 0.56, t: "size" },
-        { n: "Specterite (Legendary)", b: 0.3, t: "shake" },
-        { n: "North Star (Exotic)", b: 0.2, t: "all" },
-        { n: "Eternium (Exotic)", b: 0.32, t: "mixed" }
-    ];
+        { n: "-- Empty --", l:0, d:0, s:0, z:0 },
+        { n: "Amethyst", d:0.05 }, { n: "Blue Ice", d:0.05 }, { n: "Copper", z:0.04 }, { n: "Obsidian", z:0.04 }, { n: "Pearl", s:0.05 }, { n: "Platinum", d:0.05 }, { n: "Silver", s:0.05 },
+        { n: "Rock Candy", z:0.05 }, { n: "Sapphire", d:0.08 }, { n: "Titanium", d:0.08 }, { n: "Zircon", z:0.05 },
+        { n: "Azuralite", d:0.13 }, { n: "Candy Cane", z:0.09 }, { n: "Glacial Quartz", d:0.13 }, { n: "Gloomberry", d:0.13 }, { n: "Lapis Lazuli", d:0.13 }, { n: "Peridot", l:0.13 }, { n: "Silver Clamshell", s:0.13 },
+        { n: "Ashvein", z:0.14 }, { n: "Aurorite", d:0.2 }, { n: "Bone", z:0.14 }, { n: "Borealite", d:0.2 }, { n: "Cobalt", d:0.2 }, { n: "Emerald", l:0.2 }, { n: "Iridium", d:0.2 }, { n: "Lightshard", d:0.2 }, { n: "Moonstone", s:0.2 }, { n: "Opal", s:0.2 }, { n: "Osmium", z:0.2 },
+        { n: "Aetherite", d:0.3 }, { n: "Aquamarine", d:0.3 }, { n: "Bismuth", d:0.3 }, { n: "Cinnabar", z:0.21 }, { n: "Diamond", l:0.3 }, { n: "Dragon Bone", z:0.21 }, { n: "Fire Opal", z:0.21 }, { n: "Gloomcap", d:0.3 }, { n: "Lost Soul", d:0.3 }, { n: "Specterite", s:0.3 }, { n: "Starshine", d:0.15, s:0.15 }, { n: "Volcanic Key", z:0.21 },
+        { n: "Chrysoberyl", l:0.5 }, { n: "Flarebloom", l:0.75, z:-0.5 }, { n: "Inferlume", l:0.5 }, { n: "Painite", z:0.35 }, { n: "Pink Diamond", l:0.5 }, { n: "Prismara", l:0.25 }, { n: "Red Beryl", z:0.35 }, { n: "Star Garnet", z:0.35 }, { n: "Volcanic Core", z:0.2 },
+        { n: "Astral Spore", d:0.8 }, { n: "Bloodstone", z:0.56 }, { n: "Cryonic Artifact", d:-0.8, s:-0.8 }, { n: "Dinosaur Skull", z:0.32 }, { n: "North Star", l:0.2, d:0.2, s:0.2 }, { n: "Pumpkin Soul", z:0.56 }, { n: "Vineheart", l:0.8 }, { n: "Umbrite", d:0.4, s:0.4 }, { n: "Voidstone", l:0.4 }, { n: "Eternium", l:0.32, d:0.32, s:0.32 }
+    ].sort((a,b) => a.n.localeCompare(b.n));
 
-    function init() {
+    function build() {
         const root = document.getElementById('ui-root');
-        config.forEach(r => {
+        rarityConfig.forEach(r => {
             let slots = '';
-            for(let i=0; i < r.slots; i++) {
-                slots += `
-                <div class="slot">
-                    <select class="ore-sel" onchange="calc()">
-                        ${ores.map(o => `<option value="${o.b}" data-type="${o.t}">${o.n}</option>`).join('')}
-                    </select>
-                    <select class="mod-sel" onchange="calc()">
-                        <option value="${r.m}" data-treas="false">Normal Modifier</option>
-                        <option value="${r.m}" data-treas="true">Treasured (2x Multiplier)</option>
-                    </select>
-                </div>`;
-            }
-            root.innerHTML += `<div class="card ${r.id}"><div class="card-header"><span style="color:var(--${r.id.toLowerCase()})">${r.id}</span> <span style="font-size:0.7rem; opacity:0.6">${r.slots} DISPLAYS</span></div>${slots}</div>`;
+            for(let i=0; i<r.slots; i++) slots += `<div class="slot"><select class="ore-sel" onchange="calc()">${ores.map((o, idx) => `<option value="${idx}">${o.n}</option>`).join('')}</select><select class="mod-sel" onchange="calc()"><option value="${r.m}" data-tr="false">Normal</option><option value="${r.m}" data-tr="true">Treasured</option></select></div>`;
+            root.innerHTML += `<div class="card ${r.id}"><div class="card-h" style="color:var(--${r.id.toLowerCase()})">${r.id}</div>${slots}</div>`;
         });
-        calc();
     }
 
     function calc() {
-        let boosts = { luck: 0, dig: 0, shake: 0, size: 0 };
-        
-        document.querySelectorAll('.slot').forEach(slot => {
-            const ore = slot.querySelector('.ore-sel');
-            const mod = slot.querySelector('.mod-sel');
-            const b = parseFloat(ore.value);
-            const type = ore.options[ore.selectedIndex].getAttribute('data-type');
-            const isTreas = mod.options[mod.selectedIndex].getAttribute('data-treas') === 'true';
-            const m = parseFloat(mod.value);
-
-            if (b > 0) {
-                const totalSlot = b + (isTreas ? m * 2 : m);
-                if (type === "all") { for(let k in boosts) boosts[k] += totalSlot; }
-                else if (type === "mixed") { boosts.luck += totalSlot; boosts.dig += totalSlot; boosts.shake += totalSlot; }
-                else if (boosts[type] !== undefined) boosts[type] += totalSlot;
+        let b = { l:0, d:0, s:0, z:0, w:0 };
+        // Museum Ores
+        document.querySelectorAll('.slot').forEach(sl => {
+            const o = ores[sl.querySelector('.ore-sel').value];
+            const modVal = parseFloat(sl.querySelector('.mod-sel').value);
+            const tr = sl.querySelector('.mod-sel').selectedOptions[0].getAttribute('data-tr') === 'true';
+            const bonus = tr ? modVal * 2 : modVal;
+            if (o.n !== "-- Empty --") {
+                if (o.l) b.l += o.l + bonus;
+                if (o.d) b.d += (o.d > 0 ? o.d + bonus : o.d);
+                if (o.s) b.s += (o.s > 0 ? o.s + bonus : o.s);
+                if (o.z) b.z += (o.z > 0 ? o.z + bonus : o.z);
             }
         });
 
-        const baseStats = {
-            luck: parseFloat(document.getElementById('base-luck').value) || 0,
-            dig: parseFloat(document.getElementById('base-dig').value) || 0,
-            shake: parseFloat(document.getElementById('base-shake').value) || 0,
-            size: parseFloat(document.getElementById('base-size').value) || 0
-        };
+        // Potions & Runes & Hats
+        document.querySelectorAll('.pot:checked, .rune:checked').forEach(c => {
+            b.l += parseFloat(c.getAttribute('data-l') || 0);
+            b.d += parseFloat(c.getAttribute('data-d') || 0);
+            b.s += parseFloat(c.getAttribute('data-s') || 0);
+            b.w += parseFloat(c.getAttribute('data-w') || 0);
+        });
+        b.l += (parseInt(document.getElementById('hats').value) || 0) * 5;
 
-        // UI Updates
-        updateDisplay('luck', baseStats.luck, boosts.luck, false);
-        updateDisplay('dig', baseStats.dig, boosts.dig, true);
-        updateDisplay('shake', baseStats.shake, boosts.shake, true);
-        updateDisplay('size', baseStats.size, boosts.size, true);
+        // Summit Seeker Logic
+        if(document.getElementById('summit').checked) {
+            let speedBonus = b.w * 0.05; // 5% speed per 1 walkspeed
+            b.d += speedBonus; b.s += speedBonus;
+        }
+
+        const mastery = parseFloat(document.getElementById('mastery').value);
+        document.getElementById('f-luck').innerText = (mastery * (1 + b.l)).toFixed(2) + "x";
+        document.getElementById('f-dig').innerText = (1 * (1 + b.d)).toFixed(2) + "x";
+        document.getElementById('f-shake').innerText = (1 * (1 + b.s)).toFixed(2) + "x";
+        document.getElementById('f-size').innerText = (1 * (1 + b.z)).toFixed(2) + "x";
     }
-
-    function updateDisplay(id, base, boost, isPct) {
-        const final = base * (1 + boost);
-        const displayVal = isPct ? Math.round(final) + "%" : final.toFixed(2);
-        document.getElementById(`final-${id}`).innerText = displayVal;
-        document.getElementById(`pct-${id}`).innerText = `+${Math.round(boost * 100)}%`;
-    }
-
-    init();
+    build(); calc();
 </script>
 </body>
 </html>
