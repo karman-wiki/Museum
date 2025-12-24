@@ -3,252 +3,206 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Museum Buff Calculator</title>
+    <title>Museum Buff Calculator | Final Logic</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #1a1a1a; color: #e0e0e0; display: flex; justify-content: center; padding: 20px; }
-        .container { background-color: #252525; padding: 25px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.5); width: 100%; max-width: 900px; border: 1px solid #444; }
-        h1 { text-align: center; color: #fff; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 2px; }
-        
-        .rarity-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin-bottom: 30px; }
-        .rarity-section { background: #2d2d2d; padding: 15px; border-radius: 8px; border-left: 5px solid #555; }
-        
-        /* Rarity Colors */
-        .Common { border-color: #aaaaaa; } .Uncommon { border-color: #55ff55; } .Rare { border-color: #5555ff; }
-        .Epic { border-color: #ff55ff; } .Legendary { border-color: #ffff55; } .Mythic { border-color: #ff5555; } .Exotic { border-color: #55ffff; }
+        :root {
+            --bg: #0d0d12;
+            --panel: #1a1a24;
+            --slot: #242433;
+            --text: #ffffff;
+            --accent: #00d2ff;
+            --Common: #95a5a6; --Uncommon: #2ecc71; --Rare: #3498db;
+            --Epic: #9b59b6; --Legendary: #f1c40f; --Mythic: #e74c3c; --Exotic: #1abc9c;
+        }
 
-        .display-slot { margin-bottom: 15px; padding: 10px; background: #353535; border-radius: 5px; }
-        label { display: block; font-size: 0.9em; margin-bottom: 5px; color: #bbb; font-weight: bold; }
-        select, input { width: 100%; padding: 8px; background: #1e1e1e; color: white; border: 1px solid #555; border-radius: 4px; box-sizing: border-box; margin-bottom: 5px; }
+        body { font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text); margin: 0; display: flex; flex-direction: column; align-items: center; }
+        .wrapper { display: flex; gap: 30px; padding: 40px; max-width: 1400px; width: 100%; box-sizing: border-box; }
+        
+        .gallery { flex: 3; display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+        
+        .rarity-card { background: var(--panel); border-radius: 12px; padding: 20px; border-top: 5px solid var(--r-color); box-shadow: 0 8px 24px rgba(0,0,0,0.4); }
+        .rarity-card h3 { margin: 0 0 15px 0; font-size: 1rem; color: var(--r-color); text-transform: uppercase; letter-spacing: 1.5px; }
 
-        #results-box { background: #121212; padding: 20px; border-radius: 10px; border: 2px solid #333; }
-        .result-item { display: flex; justify-content: space-between; padding: 5px 0; border-bottom: 1px solid #222; }
-        .result-item:last-child { border-bottom: none; }
-        .val { font-weight: bold; color: #78e08f; }
-        .neg { color: #eb4d4b; }
+        .case { background: var(--slot); border-radius: 8px; padding: 15px; margin-bottom: 12px; border: 1px solid #333; }
+        select { width: 100%; padding: 10px; background: #111; color: #fff; border: 1px solid #444; border-radius: 6px; margin-top: 5px; font-size: 0.9rem; }
+        label { font-size: 0.75rem; color: #888; font-weight: bold; text-transform: uppercase; }
+
+        .sidebar { flex: 1; position: sticky; top: 20px; height: fit-content; background: #151520; border-radius: 12px; padding: 30px; border: 1px solid #2d2d3d; }
+        .sidebar h2 { margin-top: 0; font-size: 1.3rem; text-align: center; border-bottom: 2px solid #2d2d3d; padding-bottom: 15px; margin-bottom: 20px; }
+
+        .stat-line { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #242433; }
+        .stat-name { color: #ccc; }
+        .stat-val { color: #00ffaa; font-weight: 800; font-family: monospace; font-size: 1.1rem; }
+        .stat-val.neg { color: #ff4757; }
+
+        .Common { --r-color: var(--Common); } .Uncommon { --r-color: var(--Uncommon); }
+        .Rare { --r-color: var(--Rare); } .Epic { --r-color: var(--Epic); }
+        .Legendary { --r-color: var(--Legendary); } .Mythic { --r-color: var(--Mythic); }
+        .Exotic { --r-color: var(--Exotic); }
     </style>
 </head>
 <body>
 
-<div class="container">
-    <h1>Museum Calculator</h1>
-    <div id="ui-root" class="rarity-grid"></div>
-
-    <div id="results-box">
-        <h2 style="text-align:center; margin-top:0;">Total Museum Buffs</h2>
-        <div id="totals-display"></div>
+<div class="wrapper">
+    <div id="gallery" class="gallery"></div>
+    
+    <div class="sidebar">
+        <h2>TOTAL BUFFS</h2>
+        <div id="totals"></div>
     </div>
 </div>
 
 <script>
 const ORE_DATA = {
     "Common": [
-        { name: "Amethyst", minKg: 16, bonus: "DigSpeed", maxBoost: 0.05 },
-        { name: "Blue Ice", minKg: 39, bonus: "DigSpeed", maxBoost: 0.05 },
-        { name: "Copper", minKg: 60, bonus: "SizeBoost", maxBoost: 0.04 },
-        { name: "Gold", minKg: 20, bonus: "SellBoost", maxBoost: 0.05 },
-        { name: "Obsidian", minKg: 30, bonus: "SizeBoost", maxBoost: 0.04 },
-        { name: "Pearl", minKg: 19, bonus: "ShakeSpeed", maxBoost: 0.05 },
-        { name: "Platinum", minKg: 32, bonus: "DigSpeed", maxBoost: 0.05 },
-        { name: "Pyrite", minKg: 55, bonus: "Capacity", maxBoost: 0.05 },
-        { name: "Seashell", minKg: 19, bonus: "Capacity", maxBoost: 0.05 },
-        { name: "Silver", minKg: 36, bonus: "ShakeSpeed", maxBoost: 0.05 }
+        { n: "Amethyst", s: {"Dig Speed": 0.05} }, { n: "Blue Ice", s: {"Dig Speed": 0.05} },
+        { n: "Copper", s: {"Size Boost": 0.04} }, { n: "Gold", s: {"Sell Boost": 0.05} },
+        { n: "Obsidian", s: {"Size Boost": 0.04} }, { n: "Pearl", s: {"Shake Speed": 0.05} },
+        { n: "Platinum", s: {"Dig Speed": 0.05} }, { n: "Pyrite", s: {"Capacity": 0.05} },
+        { n: "Seashell", s: {"Capacity": 0.05} }, { n: "Silver", s: {"Shake Speed": 0.05} }
     ],
     "Uncommon": [
-        { name: "Coral", minKg: 10, bonus: "Capacity", maxBoost: 0.08 },
-        { name: "Electrum", minKg: 40, bonus: "SellBoost", maxBoost: 0.08 },
-        { name: "Glowberry", minKg: 40, bonus: "SellBoost", maxBoost: 0.08 },
-        { name: "Malachite", minKg: 18, bonus: "ModBoost", maxBoost: 0.08 },
-        { name: "Neodymium", minKg: 40, bonus: "ShakeStrength", maxBoost: 0.08 },
-        { name: "Rock Candy", minKg: 45, bonus: "SizeBoost", maxBoost: 0.05 },
-        { name: "Sapphire", minKg: 21, bonus: "DigSpeed", maxBoost: 0.08 },
-        { name: "Smoky Quartz", minKg: 22, bonus: "ShakeStrength", maxBoost: 0.08 },
-        { name: "Titanium", minKg: 40, bonus: "DigSpeed", maxBoost: 0.08 },
-        { name: "Topaz", minKg: 22, bonus: "Capacity", maxBoost: 0.08 },
-        { name: "Zircon", minKg: 15, bonus: "SizeBoost", maxBoost: 0.05 }
+        { n: "Coral", s: {"Capacity": 0.08} }, { n: "Electrum", s: {"Sell Boost": 0.08} },
+        { n: "Glowberry", s: {"Sell Boost": 0.08} }, { n: "Malachite", s: {"Modifier Boost": 0.08} },
+        { n: "Neodymium", s: {"Shake Strength": 0.08} }, { n: "Rock Candy", s: {"Size Boost": 0.05} },
+        { n: "Sapphire", s: {"Dig Speed": 0.08} }, { n: "Smoky Quartz", s: {"Shake Strength": 0.08} },
+        { n: "Titanium", s: {"Dig Speed": 0.08} }, { n: "Topaz", s: {"Capacity": 0.08} },
+        { n: "Zircon", s: {"Size Boost": 0.05} }
     ],
     "Rare": [
-        { name: "Amber", minKg: 21, bonus: "SellBoost", maxBoost: 0.13 },
-        { name: "Azuralite", minKg: 30, bonus: "DigSpeed", maxBoost: 0.13 },
-        { name: "Candy Cane", minKg: 38, bonus: "SizeBoost", maxBoost: 0.09 },
-        { name: "Diopside", minKg: 21, bonus: "ModBoost", maxBoost: 0.13 },
-        { name: "Glacial Quartz", minKg: 42, bonus: "DigSpeed", maxBoost: 0.13 },
-        { name: "Gloomberry", minKg: 40, bonus: "DigSpeed", maxBoost: 0.13 },
-        { name: "Jade", minKg: 40, bonus: "ModBoost", maxBoost: 0.13 },
-        { name: "Lapis Lazuli", minKg: 32, bonus: "DigSpeed", maxBoost: 0.13 },
-        { name: "Meteoric Iron", minKg: 40, bonus: "ShakeStrength", maxBoost: 0.13 },
-        { name: "Onyx", minKg: 32, bonus: "ModBoost", maxBoost: 0.13 },
-        { name: "Peridot", minKg: 20, bonus: "Luck", maxBoost: 0.13 },
-        { name: "Pyrelith", minKg: 30, bonus: "SellBoost", maxBoost: 0.13 },
-        { name: "Ruby", minKg: 20, bonus: "ShakeStrength", maxBoost: 0.13 },
-        { name: "Silver Clamshell", minKg: 21, bonus: "ShakeSpeed", maxBoost: 0.13 }
+        { n: "Amber", s: {"Sell Boost": 0.13} }, { n: "Azuralite", s: {"Dig Speed": 0.13} },
+        { n: "Candy Cane", s: {"Size Boost": 0.09} }, { n: "Diopside", s: {"Modifier Boost": 0.13} },
+        { n: "Glacial Quartz", s: {"Dig Speed": 0.13} }, { n: "Gloomberry", s: {"Dig Speed": 0.13} },
+        { n: "Jade", s: {"Modifier Boost": 0.13} }, { n: "Lapis Lazuli", s: {"Dig Speed": 0.13} },
+        { n: "Meteoric Iron", s: {"Shake Strength": 0.13} }, { n: "Onyx", s: {"Modifier Boost": 0.13} },
+        { n: "Peridot", s: {"Luck": 0.13} }, { n: "Pyrelith", s: {"Sell Boost": 0.13} },
+        { n: "Ruby", s: {"Shake Strength": 0.13} }, { n: "Silver Clamshell", s: {"Shake Speed": 0.13} }
     ],
     "Epic": [
-        { name: "Ammonite Fossil", minKg: 49, bonus: "Capacity", maxBoost: 0.2 },
-        { name: "Ashvein", minKg: 20, bonus: "SizeBoost", maxBoost: 0.14 },
-        { name: "Aurorite", minKg: 30, bonus: "DigSpeed", maxBoost: 0.2 },
-        { name: "Bone", minKg: 47, bonus: "SizeBoost", maxBoost: 0.14 },
-        { name: "Borealite", minKg: 20, bonus: "DigSpeed", maxBoost: 0.2 },
-        { name: "Cobalt", minKg: 38, bonus: "DigSpeed", maxBoost: 0.2 },
-        { name: "Emerald", minKg: 20, bonus: "Luck", maxBoost: 0.2 },
-        { name: "Glowmoss", minKg: 60, bonus: "ModBoost", maxBoost: 0.2 },
-        { name: "Golden Pearl", minKg: 19, bonus: "Capacity", maxBoost: 0.2 },
-        { name: "Iridium", minKg: 40, bonus: "DigSpeed", maxBoost: 0.2 },
-        { name: "Lightshard", minKg: 20, bonus: "DigSpeed", maxBoost: 0.2 },
-        { name: "Mercury", minKg: 76, bonus: "ShakeStrength", maxBoost: 0.2 },
-        { name: "Moonstone", minKg: 48, bonus: "ShakeSpeed", maxBoost: 0.2 },
-        { name: "Opal", minKg: 20, bonus: "ShakeSpeed", maxBoost: 0.2 },
-        { name: "Osmium", minKg: 80, bonus: "SizeBoost", maxBoost: 0.2 },
-        { name: "Pyronium", minKg: 55, bonus: "SellBoost", maxBoost: 0.2 }
+        { n: "Ammonite Fossil", s: {"Capacity": 0.2} }, { n: "Ashvein", s: {"Size Boost": 0.14} },
+        { n: "Aurorite", s: {"Dig Speed": 0.2} }, { n: "Bone", s: {"Size Boost": 0.14} },
+        { n: "Borealite", s: {"Dig Speed": 0.2} }, { n: "Cobalt", s: {"Dig Speed": 0.2} },
+        { n: "Emerald", s: {"Luck": 0.2} }, { n: "Glowmoss", s: {"Modifier Boost": 0.2} },
+        { n: "Golden Pearl", s: {"Capacity": 0.2} }, { n: "Iridium", s: {"Dig Speed": 0.2} },
+        { n: "Lightshard", s: {"Dig Speed": 0.2} }, { n: "Mercury", s: {"Shake Strength": 0.2} },
+        { n: "Moonstone", s: {"Shake Speed": 0.2} }, { n: "Opal", s: {"Shake Speed": 0.2} },
+        { n: "Osmium", s: {"Size Boost": 0.2} }, { n: "Pyronium", s: {"Sell Boost": 0.2} }
     ],
     "Legendary": [
-        { name: "Aetherite", minKg: 20, bonus: "DigSpeed", maxBoost: 0.3 },
-        { name: "Aquamarine", minKg: 20, bonus: "DigSpeed", maxBoost: 0.3 },
-        { name: "Bismuth", minKg: 78, bonus: "DigSpeed", maxBoost: 0.3 },
-        { name: "Catseye", minKg: 20, bonus: "Capacity", maxBoost: 0.3 },
-        { name: "Cinnabar", minKg: 20, bonus: "SizeBoost", maxBoost: 0.21 },
-        { name: "Diamond", minKg: 20, bonus: "Luck", maxBoost: 0.3 },
-        { name: "Dragon Bone", minKg: 50, bonus: "SizeBoost", maxBoost: 0.21 },
-        { name: "Fire Opal", minKg: 20, bonus: "SizeBoost", maxBoost: 0.21 },
-        { name: "Firefly Stone", minKg: 60, bonus: "Capacity", maxBoost: 0.3 },
-        { name: "Gloomcap", minKg: 20, bonus: "DigSpeed", maxBoost: 0.3 },
-        { name: "Lost Soul", minKg: 20, bonus: "DigSpeed", maxBoost: 0.3 },
-        { name: "Luminum", minKg: 40, bonus: "Capacity", maxBoost: 0.3 },
-        { name: "Palladium", minKg: 40, bonus: "SellBoost", maxBoost: 0.3 },
-        { name: "Peppermint Prism", minKg: 20, bonus: "ModBoost", maxBoost: 0.3 },
-        { name: "Rose Gold", minKg: 40, bonus: "ShakeStrength", maxBoost: 0.3 },
-        { name: "Specterite", minKg: 10, bonus: "ShakeSpeed", maxBoost: 0.3 },
-        { name: "Starshine", minKg: 20, bonus: "DigSpeed, ShakeSpeed", maxBoost: 0.15 },
-        { name: "Tourmaline", minKg: 25, bonus: "SellBoost", maxBoost: 0.3 },
-        { name: "Uranium", minKg: 59, bonus: "ModBoost", maxBoost: 0.3 },
-        { name: "Volcanic Key", minKg: 20, bonus: "SizeBoost", maxBoost: 0.21 }
+        { n: "Aetherite", s: {"Dig Speed": 0.3} }, { n: "Aquamarine", s: {"Dig Speed": 0.3} },
+        { n: "Bismuth", s: {"Dig Speed": 0.3} }, { n: "Catseye", s: {"Capacity": 0.3} },
+        { n: "Cinnabar", s: {"Size Boost": 0.21} }, { n: "Diamond", s: {"Luck": 0.3} },
+        { n: "Dragon Bone", s: {"Size Boost": 0.21} }, { n: "Fire Opal", s: {"Size Boost": 0.21} },
+        { n: "Firefly Stone", s: {"Capacity": 0.3} }, { n: "Gloomcap", s: {"Dig Speed": 0.3} },
+        { n: "Lost Soul", s: {"Dig Speed": 0.3} }, { n: "Luminum", s: {"Capacity": 0.3} },
+        { n: "Palladium", s: {"Sell Boost": 0.3} }, { n: "Peppermint Prism", s: {"Modifier Boost": 0.3} },
+        { n: "Rose Gold", s: {"Shake Strength": 0.3} }, { n: "Specterite", s: {"Shake Speed": 0.3} },
+        { n: "Starshine", s: {"Dig Speed": 0.15, "Shake Speed": 0.15} }, { n: "Tourmaline", s: {"Sell Boost": 0.3} },
+        { n: "Uranium", s: {"Modifier Boost": 0.3} }, { n: "Volcanic Key", s: {"Size Boost": 0.21} }
     ],
     "Mythic": [
-        { name: "Chrysoberyl", minKg: 21, bonus: "Luck", maxBoost: 0.5 },
-        { name: "Flarebloom", minKg: 21, bonus: "Luck, -SizeBoost", maxBoost: 0.75, special: { stat: "SizeBoost", val: -0.5 } },
-        { name: "Frostshard", minKg: 20, bonus: "DigStrength", maxBoost: 0.5 },
-        { name: "Inferlume", minKg: 20, bonus: "Luck", maxBoost: 0.5 },
-        { name: "Mythril", minKg: 60, bonus: "ShakeStrength", maxBoost: 0.5 },
-        { name: "Painite", minKg: 20, bonus: "SizeBoost", maxBoost: 0.35 },
-        { name: "Pink Diamond", minKg: 20, bonus: "Luck", maxBoost: 0.5 },
-        { name: "Prismara", minKg: 20, bonus: "Luck, Capacity, DigStrength, ShakeStrength", maxBoost: 0.25 },
-        { name: "Radiant Gold", minKg: 60, bonus: "SellBoost", maxBoost: 0.5 },
-        { name: "Red Beryl", minKg: 20, bonus: "SizeBoost", maxBoost: 0.35 },
-        { name: "Star Garnet", minKg: 20, bonus: "SizeBoost", maxBoost: 0.35 },
-        { name: "Volcanic Core", minKg: 20, bonus: "DigStrength, SizeBoost", maxBoost: 0.25, special: { stat: "SizeBoost", val: 0.2 } },
-        { name: "Vortessence", minKg: 20, bonus: "Capacity", maxBoost: 0.5 }
+        { n: "Chrysoberyl", s: {"Luck": 0.5} }, { n: "Flarebloom", s: {"Luck": 0.75, "Size Boost": -0.5} },
+        { n: "Frostshard", s: {"Dig Strength": 0.5} }, { n: "Inferlume", s: {"Luck": 0.5} },
+        { n: "Mythril", s: {"Shake Strength": 0.5} }, { n: "Painite", s: {"Size Boost": 0.35} },
+        { n: "Pink Diamond", s: {"Luck": 0.5} }, { n: "Prismara", s: {"Luck": 0.25, "Capacity": 0.25, "Dig Strength": 0.25, "Shake Strength": 0.25} },
+        { n: "Radiant Gold", s: {"Sell Boost": 0.5} }, { n: "Red Beryl", s: {"Size Boost": 0.35} },
+        { n: "Star Garnet", s: {"Size Boost": 0.35} }, { n: "Volcanic Core", s: {"Dig Strength": 0.25, "Size Boost": 0.2} },
+        { n: "Vortessence", s: {"Capacity": 0.5} }
     ],
     "Exotic": [
-        { name: "Astral Spore", minKg: 20, bonus: "DigSpeed", maxBoost: 0.8 },
-        { name: "Bloodstone", minKg: 40, bonus: "SizeBoost", maxBoost: 0.56 },
-        { name: "Cryonic Artifact", minKg: 20, bonus: "DigStrength, ShakeStrength, -DigSpeed, -ShakeSpeed", maxBoost: 1.2, multiSpec: { "DigSpeed": -0.8, "ShakeSpeed": -0.8, "ShakeStrength": 1.2 } },
-        { name: "Dinosaur Skull", minKg: 100, bonus: "SellBoost, SizeBoost", maxBoost: 0.4, special: { stat: "SizeBoost", val: 0.32 } },
-        { name: "North Star", minKg: 40, bonus: "Luck, Capacity, DigSpeed, ShakeSpeed", maxBoost: 0.2 },
-        { name: "Pumpkin Soul", minKg: 40, bonus: "SizeBoost", maxBoost: 0.56 },
-        { name: "Vineheart", minKg: 40, bonus: "Luck", maxBoost: 0.8 },
-        { name: "Umbrite", minKg: 30, bonus: "DigSpeed, ShakeSpeed", maxBoost: 0.4 },
-        { name: "Voidstone", minKg: 20, bonus: "Luck, Capacity", maxBoost: 0.4 },
-        { name: "Eternium", minKg: 20, bonus: "Luck, DigSpeed, ShakeSpeed", maxBoost: 0.32 }
+        { n: "Astral Spore", s: {"Dig Speed": 0.8} }, { n: "Bloodstone", s: {"Size Boost": 0.56} },
+        { n: "Cryonic Artifact", s: {"Dig Strength": 1.2, "Shake Strength": 1.2, "Dig Speed": -0.8, "Shake Speed": -0.8} },
+        { n: "Dinosaur Skull", s: {"Sell Boost": 0.4, "Size Boost": 0.32} },
+        { n: "North Star", s: {"Luck": 0.2, "Capacity": 0.2, "Dig Speed": 0.2, "Shake Speed": 0.2} },
+        { n: "Pumpkin Soul", s: {"Size Boost": 0.56} }, { n: "Vineheart", s: {"Luck": 0.8} },
+        { n: "Umbrite", s: {"Dig Speed": 0.4, "Shake Speed": 0.4} }, { n: "Voidstone", s: {"Luck": 0.4, "Capacity": 0.4} },
+        { n: "Eternium", s: {"Luck": 0.32, "Dig Speed": 0.32, "Shake Speed": 0.32} }
     ]
 };
 
-const MODIFIERS = {
-    "None": { mult: 0, stats: [] },
-    "Treasured": { mult: 15, stats: ["Luck"], specialMult: 2 },
-    "Voidtorn": { mult: 11, stats: ["Luck", "Capacity"] },
-    "Electrified": { mult: 5, stats: ["DigSpeed", "ShakeSpeed"] },
-    "Iridescent": { mult: 3.5, stats: ["Luck"] },
-    "Crystalline": { mult: 3, stats: ["SizeBoost"] },
-    "Irradiated": { mult: 2.5, stats: ["ModBoost"] },
-    "Scorching": { mult: 2, stats: ["DigStrength"] },
-    "Glowing": { mult: 1.6, stats: ["ShakeSpeed"] },
-    "Pure": { mult: 1.35, stats: ["DigSpeed"] },
-    "Shiny": { mult: 1.2, stats: ["ShakeStrength"] }
+const MOD_LIB = {
+    "Treasured": {m: 15, stats: ["Luck"], t: true},
+    "Voidtorn": {m: 11, stats: ["Luck", "Capacity"]},
+    "Electrified": {m: 5, stats: ["Dig Speed", "Shake Speed"]},
+    "Iridescent": {m: 3.5, stats: ["Luck"]},
+    "Crystalline": {m: 3, stats: ["Size Boost"]},
+    "Irradiated": {m: 2.5, stats: ["Modifier Boost"]},
+    "Scorching": {m: 2, stats: ["Dig Strength"]},
+    "Glowing": {m: 1.6, stats: ["Shake Speed"]},
+    "Pure": {m: 1.35, stats: ["Dig Speed"]},
+    "Shiny": {m: 1.2, stats: ["Shake Strength"]}
 };
 
-const RARITY_MOD_MULT = { "Common": 0.005, "Uncommon": 0.0075, "Rare": 0.0125, "Epic": 0.02, "Legendary": 0.03, "Mythic": 0.05, "Exotic": 0.08 };
+const RARITY_VALS = {
+    'Common': 0.005, 'Uncommon': 0.0075, 'Rare': 0.0125,
+    'Epic': 0.02, 'Legendary': 0.03, 'Mythic': 0.05, 'Exotic': 0.08
+};
 
 function init() {
-    const root = document.getElementById('ui-root');
-    const rarities = ["Common", "Uncommon", "Rare", "Epic", "Legendary", "Mythic", "Exotic"];
-    const counts = { Common: 3, Uncommon: 3, Rare: 3, Epic: 3, Legendary: 3, Mythic: 2, Exotic: 1 };
+    const gallery = document.getElementById('gallery');
+    const layout = { Common: 3, Uncommon: 3, Rare: 3, Epic: 3, Legendary: 3, Mythic: 2, Exotic: 1 };
 
-    rarities.forEach(rarity => {
-        let section = document.createElement('div');
-        section.className = `rarity-section ${rarity}`;
-        section.innerHTML = `<h3>${rarity}</h3>`;
-        
-        for (let i = 0; i < counts[rarity]; i++) {
-            let slot = document.createElement('div');
-            slot.className = 'display-slot';
-            const slotId = `${rarity}_${i}`;
-            
-            slot.innerHTML = `
-                <label>Ore</label>
-                <select id="ore_${slotId}" onchange="calculate()">
-                    <option value="">Empty</option>
-                    ${ORE_DATA[rarity].map(o => `<option value="${o.name}">${o.name}</option>`).join('')}
-                </select>
-                <label>Weight (KG)</label>
-                <input type="number" id="kg_${slotId}" placeholder="Min: 0" value="0" oninput="calculate()">
-                <label>Modifier</label>
-                <select id="mod_${slotId}" onchange="calculate()">
-                    ${Object.keys(MODIFIERS).map(m => `<option value="${m}">${m}</option>`).join('')}
-                </select>
-            `;
-            section.appendChild(slot);
+    Object.entries(layout).forEach(([rarity, count]) => {
+        let card = document.createElement('div');
+        card.className = `rarity-card ${rarity}`;
+        card.innerHTML = `<h3>${rarity} Displays</h3>`;
+        for (let i = 0; i < count; i++) {
+            card.innerHTML += `
+                <div class="case">
+                    <label>Mineral</label>
+                    <select id="ore_${rarity}_${i}" onchange="calc()">
+                        <option value="">-- Empty --</option>
+                        ${ORE_DATA[rarity].map(o => `<option value="${o.n}">${o.n}</option>`).join('')}
+                    </select>
+                    <div style="margin-top:10px">
+                        <label>Modifier</label>
+                        <select id="mod_${rarity}_${i}" onchange="calc()">
+                            <option value="">None</option>
+                            ${Object.keys(MOD_LIB).map(m => `<option value="${m}">${m}</option>`).join('')}
+                        </select>
+                    </div>
+                </div>`;
         }
-        root.appendChild(section);
+        gallery.appendChild(card);
     });
-    calculate();
+    calc();
 }
 
-function calculate() {
-    let totals = { Luck: 1, DigAmount: 1, Capacity: 1, DigSpeed: 1, DigStrength: 1, ShakeStrength: 1, ShakeAmount: 1, ShakeSpeed: 1, SellBoost: 1, SizeBoost: 1, ModBoost: 1 };
-    
-    document.querySelectorAll('.rarity-section').forEach(section => {
-        const rarity = section.querySelector('h3').innerText;
-        section.querySelectorAll('.display-slot').forEach((slot, i) => {
-            const oreName = document.getElementById(`ore_${rarity}_${i}`).value;
-            const kg = parseFloat(document.getElementById(`kg_${rarity}_${i}`).value) || 0;
-            const modName = document.getElementById(`mod_${rarity}_${i}`).value;
+function calc() {
+    let totals = { "Luck": 0, "Dig Speed": 0, "Capacity": 0, "Shake Speed": 0, "Size Boost": 0, "Sell Boost": 0, "Modifier Boost": 0, "Shake Strength": 0, "Dig Strength": 0 };
 
-            if (!oreName) return;
+    Object.keys(layout_ref = {Common:3, Uncommon:3, Rare:3, Epic:3, Legendary:3, Mythic:2, Exotic:1}).forEach(rarity => {
+        for (let i = 0; i < layout_ref[rarity]; i++) {
+            const oreN = document.getElementById(`ore_${rarity}_${i}`).value;
+            const modN = document.getElementById(`mod_${rarity}_${i}`).value;
 
-            const ore = ORE_DATA[rarity].find(o => o.name === oreName);
-            const weightMult = Math.min(1.5, kg / ore.minKg); // Assumed standard weight scaling for ores
-            
-            // Base Ore Bonus
-            const stats = ore.bonus.split(', ').map(s => s.trim());
-            stats.forEach(stat => {
-                let cleanStat = stat.replace('-', '');
-                let value = ore.maxBoost * weightMult;
-                if (stat.startsWith('-')) value *= -1;
-                
-                // Handle complex multi-stat ores (Cryonic/Prismara/Flarebloom)
-                if (ore.multiSpec && ore.multiSpec[cleanStat]) value = ore.multiSpec[cleanStat] * weightMult;
-                if (ore.special && ore.special.stat === cleanStat) value = ore.special.val * weightMult;
-
-                totals[cleanStat] += value;
-            });
-
-            // Modifier Bonus
-            if (modName !== "None") {
-                const mod = MODIFIERS[modName];
-                let baseModVal = RARITY_MOD_MULT[rarity];
-                if (modName === "Treasured") baseModVal *= 2;
-                
-                const modValue = baseModVal * mod.mult * weightMult;
-                mod.stats.forEach(s => totals[s] += modValue);
+            if (oreN) {
+                const ore = ORE_DATA[rarity].find(o => o.n === oreN);
+                for (let [s, v] of Object.entries(ore.s)) totals[s] += v;
             }
-        });
+
+            if (modN) {
+                const mod = MOD_LIB[modN];
+                let base = RARITY_VALS[rarity];
+                
+                // Prompt Rule: Rare and below show as 0.01x increase (Treasured doubled)
+                if (['Common', 'Uncommon', 'Rare'].includes(rarity)) {
+                    base = 0.01 / mod.m; 
+                }
+
+                let modVal = base * mod.m;
+                if (mod.t) modVal *= 2;
+
+                mod.stats.forEach(s => { if(totals[s] !== undefined) totals[s] += modVal; });
+            }
+        }
     });
 
-    const display = document.getElementById('totals-display');
-    display.innerHTML = '';
-    Object.entries(totals).forEach(([key, val]) => {
-        if (val === 1) return;
-        let colorClass = val < 1 ? 'neg' : '';
-        display.innerHTML += `<div class="result-item"><span>${key}</span><span class="val ${colorClass}">x${val.toFixed(2)}</span></div>`;
+    const list = document.getElementById('totals');
+    list.innerHTML = '';
+    Object.entries(totals).forEach(([name, val]) => {
+        const final = 1 + val;
+        list.innerHTML += `<div class="stat-line"><span class="stat-name">${name}</span><span class="stat-val ${final < 1 ? 'neg' : ''}">x${final.toFixed(2)}</span></div>`;
     });
 }
 
