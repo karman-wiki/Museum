@@ -5,88 +5,213 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prospecting Formula Calculator</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #2c1e14; color: #f0e6d2; padding: 20px; }
-        .container { max-width: 600px; margin: 0 auto; background: #3d2b1f; padding: 25px; border-radius: 12px; border: 2px solid #8b5a2b; box-shadow: 0 10px 30px rgba(0,0,0,0.5); }
-        h1 { text-align: center; color: #d4af37; text-shadow: 2px 2px 4px #000; margin-bottom: 30px; }
-        .input-group { margin-bottom: 15px; display: flex; align-items: center; justify-content: space-between; }
-        label { font-weight: bold; color: #c4a484; }
-        input { background: #1a110a; border: 1px solid #8b5a2b; color: #fff; padding: 8px; border-radius: 4px; width: 60%; text-align: center; font-size: 1.1em; }
-        .results-section { margin-top: 30px; border-top: 2px solid #8b5a2b; padding-top: 20px; }
-        .result-card { background: #4e3629; padding: 15px; border-radius: 8px; margin-bottom: 15px; border-left: 5px solid #d4af37; }
-        .result-title { font-size: 0.9em; text-transform: uppercase; color: #d4af37; margin-bottom: 5px; }
-        .result-value { font-size: 1.8em; font-weight: bold; font-family: 'Courier New', Courier, monospace; }
-        .formula-hint { font-size: 0.8em; color: #a18262; margin-top: 5px; font-style: italic; }
+        :root {
+            --bg-color: #1a110a;
+            --card-bg: #2c1e14;
+            --text-color: #f0e6d2;
+            --accent: #d4af37;
+            --input-bg: #000000;
+        }
+
+        .light-mode {
+            --bg-color: #f4ece1;
+            --card-bg: #ffffff;
+            --text-color: #2c1e14;
+            --accent: #8b5a2b;
+            --input-bg: #e8ded1;
+        }
+
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            transition: background 0.5s, color 0.5s;
+            overflow-x: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+        }
+
+        #bg-animation {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            z-index: -1;
+            background: linear-gradient(45deg, var(--bg-color), var(--card-bg));
+        }
+
+        .particle {
+            position: absolute;
+            background: var(--accent);
+            border-radius: 50%;
+            opacity: 0.2;
+            animation: float 15s infinite linear;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(100vh) translateX(0); }
+            100% { transform: translateY(-10vh) translateX(50px); }
+        }
+
+        .container {
+            width: 95%;
+            max-width: 550px;
+            background: var(--card-bg);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 15px 35px rgba(0,0,0,0.5);
+            border: 2px solid var(--accent);
+            position: relative;
+            z-index: 1;
+        }
+
+        h1 { text-align: center; color: var(--accent); margin-bottom: 20px; font-size: 1.5rem; }
+
+        .controls { display: flex; justify-content: flex-end; margin-bottom: 20px; }
+
+        select, input {
+            width: 100%;
+            padding: 12px;
+            margin: 8px 0;
+            background: var(--input-bg);
+            border: 1px solid var(--accent);
+            color: var(--text-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            box-sizing: border-box;
+        }
+
+        label { font-size: 0.85rem; font-weight: bold; color: var(--accent); }
+
+        .result-display {
+            background: rgba(0,0,0,0.2);
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            margin-top: 25px;
+            border-top: 3px solid var(--accent);
+        }
+
+        .value { font-size: 2.2rem; font-weight: bold; display: block; margin: 10px 0; }
+        .formula-text { font-size: 0.75rem; opacity: 0.8; font-family: monospace; }
+
+        .btn-toggle {
+            background: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .hidden { display: none; }
     </style>
 </head>
 <body>
 
+<div id="bg-animation"></div>
+
 <div class="container">
+    <div class="controls">
+        <button class="btn-toggle" onclick="toggleTheme()">🌓 Switch Theme</button>
+    </div>
+
     <h1>Prospecting Formula Calculator</h1>
 
-    <div class="input-group">
+    <label>Calculation Mode:</label>
+    <select id="calcType" onchange="updateUI()">
+        <option value="eff">Shaking Efficiency (R)</option>
+        <option value="macro">Autopan/Macro Efficiency</option>
+        <option value="opt">Optimal Capacity (C-Opt)</option>
+    </select>
+
+    <div id="luck-group">
         <label>Luck (L):</label>
-        <input type="number" id="luck" value="42360" oninput="calculate()">
+        <input type="number" id="L" value="44696" oninput="calculate()">
     </div>
-    <div class="input-group">
-        <label>Capacity (C):</label>
-        <input type="number" id="cap" value="8207" oninput="calculate()">
-    </div>
-    <div class="input-group">
-        <label>Shake Speed (s):</label>
-        <input type="number" id="speed" value="644" oninput="calculate()">
-    </div>
-    <div class="input-group">
-        <label>Shake Strength (a):</label>
-        <input type="number" id="strength" value="492" oninput="calculate()">
+    
+    <label>Capacity (C):</label>
+    <input type="number" id="C" value="6643" oninput="calculate()">
+    
+    <label>Shake Speed (s):</label>
+    <input type="number" id="s" value="688" oninput="calculate()">
+    
+    <label>Shake Strength (a):</label>
+    <input type="number" id="a" value="443" oninput="calculate()">
+
+    <div id="macro-group" class="hidden">
+        <label>Digs to Fill (n):</label>
+        <input type="number" id="n" value="10" oninput="calculate()">
+        <label>Dig Speed (d):</label>
+        <input type="number" id="d" value="338" oninput="calculate()">
     </div>
 
-    <div class="results-section">
-        <div class="result-card">
-            <div class="result-title">Total Shaking Efficiency (R)</div>
-            <div id="r-score" class="result-value">0</div>
-            <div class="formula-hint">L√C / (100C / 3sa + 2.5)</div>
-        </div>
-
-        <div class="result-card">
-            <div class="result-title">Optimal Capacity (C-Opt)</div>
-            <div id="c-opt" class="result-value" style="color: #4db8ff;">0</div>
-            <div class="formula-hint">(2.5 * 3sa) / 100</div>
-        </div>
-
-        <div class="result-card">
-            <div class="result-title">Shaking Penalty Time</div>
-            <div id="penalty" class="result-value" style="color: #ff6b6b;">0s</div>
-            <div class="formula-hint">100C / 3sa</div>
-        </div>
+    <div class="result-display">
+        <span id="res-label" style="text-transform: uppercase; font-size: 0.8rem; letter-spacing: 1px;">Result</span>
+        <span id="res-value" class="value">0</span>
+        <span id="res-formula" class="formula-text"></span>
     </div>
 </div>
 
 <script>
-    function calculate() {
-        // Pull values from inputs
-        const L = parseFloat(document.getElementById('luck').value) || 0;
-        const C = parseFloat(document.getElementById('cap').value) || 0;
-        const s = parseFloat(document.getElementById('speed').value) || 0;
-        const a = parseFloat(document.getElementById('strength').value) || 0;
-
-        // 1. Shaking Penalty calculation
-        const shakePenalty = (100 * C) / (3 * s * a);
-        document.getElementById('penalty').innerText = shakePenalty.toFixed(4) + "s";
-
-        // 2. Optimal Capacity calculation
-        const cOpt = (2.5 * 3 * s * a) / 100;
-        document.getElementById('c-opt').innerText = Math.round(cOpt).toLocaleString();
-
-        // 3. Shaking Efficiency (R)
-        const numerator = L * Math.sqrt(C);
-        const denominator = shakePenalty + 2.5;
-        const R = numerator / denominator;
-        
-        document.getElementById('r-score').innerText = isFinite(R) ? R.toLocaleString(undefined, {maximumFractionDigits: 1}) : "0";
+    function toggleTheme() {
+        document.body.classList.toggle('light-mode');
     }
 
-    // Run once on load
-    calculate();
+    const bg = document.getElementById('bg-animation');
+    for (let i = 0; i < 20; i++) {
+        const p = document.createElement('div');
+        p.className = 'particle';
+        p.style.left = Math.random() * 100 + 'vw';
+        p.style.width = p.style.height = Math.random() * 10 + 5 + 'px';
+        p.style.animationDelay = Math.random() * 10 + 's';
+        bg.appendChild(p);
+    }
+
+    function updateUI() {
+        const type = document.getElementById('calcType').value;
+        const luckGroup = document.getElementById('luck-group');
+        const macroGroup = document.getElementById('macro-group');
+        
+        luckGroup.classList.toggle('hidden', type === 'opt');
+        macroGroup.classList.toggle('hidden', type !== 'macro');
+
+        calculate();
+    }
+
+    function calculate() {
+        const L = parseFloat(document.getElementById('L').value) || 0;
+        const C = parseFloat(document.getElementById('C').value) || 0;
+        const s = parseFloat(document.getElementById('s').value) || 0;
+        const a = parseFloat(document.getElementById('a').value) || 0;
+        const n = parseFloat(document.getElementById('n').value) || 0;
+        const d = parseFloat(document.getElementById('d').value) || 0;
+        const type = document.getElementById('calcType').value;
+
+        let result = 0;
+        const shakePenalty = (100 * C) / (3 * s * a);
+        
+        if (type === 'eff') {
+            result = (L * Math.sqrt(C)) / (shakePenalty + 2.5);
+            document.getElementById('res-label').innerText = "Shaking Efficiency Score";
+            document.getElementById('res-formula').innerText = "L√C / (Penalty + 2.5)";
+        } else if (type === 'macro') {
+            const macroPenalty = (100 * 1.9 * n) / d;
+            result = (L * Math.sqrt(C)) / (shakePenalty + 3 + macroPenalty);
+            document.getElementById('res-label').innerText = "Autopan/Macro Efficiency";
+            document.getElementById('res-formula').innerText = "L√C / (ShakePenalty + 3 + (190n / d))";
+        } else {
+            result = (2.5 * 3 * s * a) / 100;
+            document.getElementById('res-label').innerText = "Optimal Capacity Target";
+            document.getElementById('res-formula').innerText = "(2.5 * 3sa) / 100";
+        }
+
+        document.getElementById('res-value').innerText = result.toLocaleString(undefined, {maximumFractionDigits: 1});
+    }
+
+    updateUI();
 </script>
 
 </body>
