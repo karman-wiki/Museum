@@ -66,7 +66,16 @@
             z-index: 1;
         }
 
-        h1 { text-align: center; color: var(--accent); margin-bottom: 20px; font-size: 1.5rem; }
+        h1 { text-align: center; color: var(--accent); margin-bottom: 5px; font-size: 1.5rem; }
+        
+        .credit { 
+            text-align: center; 
+            font-size: 0.8rem; 
+            color: var(--accent); 
+            margin-bottom: 20px; 
+            font-style: italic;
+            opacity: 0.9;
+        }
 
         .controls { display: flex; justify-content: flex-end; margin-bottom: 20px; }
 
@@ -119,33 +128,37 @@
     </div>
 
     <h1>Prospecting Formula Calculator</h1>
+    <div class="credit">Formulas created by Autumn</div>
 
     <label>Calculation Mode:</label>
     <select id="calcType" onchange="updateUI()">
         <option value="eff">Shaking Efficiency (R)</option>
         <option value="macro">Autopan/Macro Efficiency</option>
-        <option value="opt">Optimal Capacity (C-Opt)</option>
+        <option value="opt">Optimal Capacity (Active)</option>
+        <option value="opt_macro">Optimal Capacity (Macro)</option>
     </select>
 
     <div id="luck-group">
         <label>Luck (L):</label>
-        <input type="number" id="L" value="44696" oninput="calculate()">
+        <input type="number" id="L" value="46121" oninput="calculate()">
     </div>
     
-    <label>Capacity (C):</label>
-    <input type="number" id="C" value="6643" oninput="calculate()">
+    <div id="cap-group">
+        <label>Capacity (C):</label>
+        <input type="number" id="C" value="11812" oninput="calculate()">
+    </div>
     
     <label>Shake Speed (s):</label>
-    <input type="number" id="s" value="688" oninput="calculate()">
+    <input type="number" id="s" value="744" oninput="calculate()">
     
     <label>Shake Strength (a):</label>
-    <input type="number" id="a" value="443" oninput="calculate()">
+    <input type="number" id="a" value="1476" oninput="calculate()">
 
     <div id="macro-group" class="hidden">
         <label>Digs to Fill (n):</label>
-        <input type="number" id="n" value="10" oninput="calculate()">
+        <input type="number" id="n" value="15" oninput="calculate()">
         <label>Dig Speed (d):</label>
-        <input type="number" id="d" value="338" oninput="calculate()">
+        <input type="number" id="d" value="440" oninput="calculate()">
     </div>
 
     <div class="result-display">
@@ -161,22 +174,25 @@
     }
 
     const bg = document.getElementById('bg-animation');
-    for (let i = 0; i < 20; i++) {
+    for (let i = 0; i < 25; i++) {
         const p = document.createElement('div');
         p.className = 'particle';
         p.style.left = Math.random() * 100 + 'vw';
-        p.style.width = p.style.height = Math.random() * 10 + 5 + 'px';
-        p.style.animationDelay = Math.random() * 10 + 's';
+        p.style.width = p.style.height = Math.random() * 8 + 4 + 'px';
+        p.style.animationDuration = Math.random() * 10 + 10 + 's';
+        p.style.animationDelay = Math.random() * 5 + 's';
         bg.appendChild(p);
     }
 
     function updateUI() {
         const type = document.getElementById('calcType').value;
         const luckGroup = document.getElementById('luck-group');
+        const capGroup = document.getElementById('cap-group');
         const macroGroup = document.getElementById('macro-group');
         
-        luckGroup.classList.toggle('hidden', type === 'opt');
-        macroGroup.classList.toggle('hidden', type !== 'macro');
+        luckGroup.classList.toggle('hidden', type.startsWith('opt'));
+        capGroup.classList.toggle('hidden', type.startsWith('opt'));
+        macroGroup.classList.toggle('hidden', type !== 'macro' && type !== 'opt_macro');
 
         calculate();
     }
@@ -201,11 +217,16 @@
             const macroPenalty = (100 * 1.9 * n) / d;
             result = (L * Math.sqrt(C)) / (shakePenalty + 3 + macroPenalty);
             document.getElementById('res-label').innerText = "Autopan/Macro Efficiency";
-            document.getElementById('res-formula').innerText = "L√C / (ShakePenalty + 3 + (190n / d))";
-        } else {
+            document.getElementById('res-formula').innerText = "L√C / (Penalty + 3 + (190n / d))";
+        } else if (type === 'opt') {
             result = (2.5 * 3 * s * a) / 100;
-            document.getElementById('res-label').innerText = "Optimal Capacity Target";
+            document.getElementById('res-label').innerText = "Optimal Capacity (Active)";
             document.getElementById('res-formula').innerText = "(2.5 * 3sa) / 100";
+        } else if (type === 'opt_macro') {
+            // New Autumn Formula
+            result = (0.09 * s * a) + ((5.7 * s * a * n) / d);
+            document.getElementById('res-label').innerText = "Optimal Capacity (Macro)";
+            document.getElementById('res-formula').innerText = "0.09sa + (5.7san / d)";
         }
 
         document.getElementById('res-value').innerText = result.toLocaleString(undefined, {maximumFractionDigits: 1});
